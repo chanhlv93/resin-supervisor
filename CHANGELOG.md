@@ -1,3 +1,5 @@
+* Stop all apps before rebooting or shutting down [Pablo]
+
 # v1.8.0
 
 * Add endpoints to start, stop and get app [Pablo, Kostas]

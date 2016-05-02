@@ -44,13 +44,37 @@ module.exports = (application) ->
 
 	api.post '/v1/reboot', (req, res) ->
 		utils.mixpanelTrack('Reboot')
-		request.post(config.gosuperAddress + '/v1/reboot')
-		.pipe(res)
+		knex('app').select()
+		.then (apps) ->
+			Promise.map apps, (theApp) ->
+				Promise.using application.lockUpdates(theApp.appId), ->
+					# There's a slight chance the app changed after the previous select
+					# So we fetch it again now the lock is acquired
+					knex('app').select().where({ appId: theApp.appId })
+					.then ([ app ]) ->
+						application.kill(app, true, false) if app?
+		.then ->
+			request.post(config.gosuperAddress + '/v1/reboot')
+			.pipe(res)
+		.catch (err) ->
+			res.status(503).send(err?.message or err or 'Unknown error')
 
 	api.post '/v1/shutdown', (req, res) ->
 		utils.mixpanelTrack('Shutdown')
-		request.post(config.gosuperAddress + '/v1/shutdown')
-		.pipe(res)
+		knex('app').select()
+		.then (apps) ->
+			Promise.map apps, (theApp) ->
+				Promise.using application.lockUpdates(theApp.appId), ->
+					# There's a slight chance the app changed after the previous select
+					# So we fetch it again now the lock is acquired
+					knex('app').select().where({ appId: theApp.appId })
+					.then ([ app ]) ->
+						application.kill(app, true, false) if app?
+		.then ->
+			request.post(config.gosuperAddress + '/v1/shutdown')
+			.pipe(res)
+		.catch (err) ->
+			res.status(503).send(err?.message or err or 'Unknown error')
 
 	api.post '/v1/purge', (req, res) ->
 		appId = req.body.appId
