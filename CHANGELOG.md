@@ -1,3 +1,5 @@
+* **[Breaking]** Change the logger to send at a specific interval and with a different message format [Pablo]
+
 # v1.13.2
 
 * bootstrap: if offlineMode is enabled, persist only the uuid [petrosagg]
