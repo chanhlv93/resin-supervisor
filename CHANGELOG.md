@@ -1,3 +1,5 @@
+* Change device registering so the server generates the UUID and returns a dedicated api key which we replace our provisioning key with.
+
 # v1.13.1
 
 * Using `links` in compose files is now allowed [petrosagg]

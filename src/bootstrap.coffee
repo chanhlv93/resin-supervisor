@@ -1,8 +1,8 @@
 Promise = require 'bluebird'
 knex = require './db'
 utils = require './utils'
+_ = require 'lodash'
 deviceRegister = require 'resin-register-device'
-{ resinApi } = require './request'
 fs = Promise.promisifyAll(require('fs'))
 config = require './config'
 configPath = '/boot/config.json'
@@ -32,20 +32,17 @@ bootstrap = ->
 		userConfig.deviceType ?= 'raspberry-pi'
 		if userConfig.registered_at?
 			return userConfig
-		deviceRegister.register(resinApi, userConfig)
-		.catch DuplicateUuidError, ->
-			resinApi.get
-				resource: 'device'
-				options:
-					filter:
-						uuid: userConfig.uuid
-				customOptions:
-					apikey: userConfig.apiKey
-			.then ([ device ]) ->
-				return device
-		.then (device) ->
+
+		deviceRegister.register(
+			userId: userConfig.userId
+			applicationId: userConfig.applicationId
+			deviceType: userConfig.deviceType
+		)
+		.then ({ id, uuid, api_key }) ->
 			userConfig.registered_at = Date.now()
-			userConfig.deviceId = device.id
+			userConfig.deviceId = id
+			userConfig.uuid = uuid
+			userConfig.apiKey = api_key
 			fs.writeFileAsync(configPath, JSON.stringify(userConfig))
 		.return(userConfig)
 	.then (userConfig) ->
@@ -67,20 +64,6 @@ bootstrap = ->
 readConfig = ->
 	fs.readFileAsync(configPath, 'utf8')
 	.then(JSON.parse)
-
-readConfigAndEnsureUUID = ->
-	Promise.try ->
-		return userConfig.uuid if userConfig.uuid?
-		deviceRegister.generateUUID()
-		.then (uuid) ->
-			userConfig.uuid = uuid
-			fs.writeFileAsync(configPath, JSON.stringify(userConfig))
-			.return(uuid)
-	.catch (err) ->
-		console.log('Error generating and saving UUID: ', err)
-		Promise.delay(config.bootstrapRetryDelay)
-		.then ->
-			readConfigAndEnsureUUID()
 
 bootstrapOrRetry = ->
 	utils.mixpanelTrack('Device bootstrap')
@@ -108,10 +91,10 @@ bootstrapper.startBootstrapping = ->
 			bootstrapper.doneBootstrapping() if !bootstrapper.offlineMode
 			return uuid.value
 		console.log('New device detected. Bootstrapping..')
-		readConfigAndEnsureUUID()
-		.tap ->
-			loadPreloadedApps()
-		.tap ->
+		loadPreloadedApps()
+		.then ->
 			bootstrapOrRetry()
+			# Don't wait on bootstrapping here, bootstrapper.done is for that.
+			return
 
 module.exports = bootstrapper

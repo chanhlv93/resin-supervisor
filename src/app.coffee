@@ -15,10 +15,7 @@ knex.init.then ->
 	console.log('Starting connectivity check..')
 	utils.connectivityCheck()
 
-	Promise.join bootstrap.startBootstrapping(), utils.getOrGenerateSecret('api'), utils.getOrGenerateSecret('logsChannel'), (uuid, secret, logsChannel) ->
-		# Persist the uuid in subsequent metrics
-		utils.mixpanelProperties.uuid = uuid
-
+	Promise.join utils.getOrGenerateSecret('api'), utils.getOrGenerateSecret('logsChannel'), bootstrap.startBootstrapping(), (secret, logsChannel) ->
 		api = require './api'
 		application = require('./application')(logsChannel, bootstrap.offlineMode)
 		device = require './device'
@@ -28,7 +25,9 @@ knex.init.then ->
 		apiServer.timeout = config.apiTimeout
 
 		bootstrap.done
-		.then ->
+		.then (uuid) ->
+			# Persist the uuid in subsequent metrics
+			utils.mixpanelProperties.uuid = uuid
 			device.getOSVersion()
 		.then (osVersion) ->
 			# Let API know what version we are, and our api connection info.
