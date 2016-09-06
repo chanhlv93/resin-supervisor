@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"unsafe"
 
-	cpu "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
-	net "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
+	cpu "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+	net "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
 )
 
 // MemoryInfoExStat is different between OSes

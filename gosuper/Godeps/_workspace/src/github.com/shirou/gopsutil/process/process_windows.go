@@ -9,12 +9,12 @@ import (
 	"time"
 	"unsafe"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/StackExchange/wmi"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/w32"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/StackExchange/wmi"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/w32"
 
-	cpu "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
-	net "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
+	cpu "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+	net "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
 )
 
 const (

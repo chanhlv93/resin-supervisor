@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	pinejs "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/resin-io/pinejs-client-go"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/resin-io/pinejs-client-go/resin"
+	pinejs "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/resin-io/pinejs-client-go"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/resin-io/pinejs-client-go/resin"
 
-	"resin-supervisor/gosuper/supermodels"
+	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 )
 
 type Client struct {

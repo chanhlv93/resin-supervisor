@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/fatih/structs"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/fatih/structs"
 )
 
 // Retrieve resource name from input struct - if contains a pinejs tag, use

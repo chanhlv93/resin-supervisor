@@ -3,7 +3,7 @@ package introspect
 import (
 	"encoding/xml"
 	"reflect"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus"
 	"strings"
 )
 

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/StackExchange/wmi"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/StackExchange/wmi"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
-	process "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/process"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+	process "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/process"
 )
 
 var (

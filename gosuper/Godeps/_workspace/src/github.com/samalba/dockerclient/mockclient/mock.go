@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/stretchr/testify/mock"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
 )
 
 type MockClient struct {

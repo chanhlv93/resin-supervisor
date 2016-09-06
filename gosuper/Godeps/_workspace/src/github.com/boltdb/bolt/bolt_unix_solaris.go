@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/golang.org/x/sys/unix"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/golang.org/x/sys/unix"
 )
 
 // flock acquires an advisory lock on a file descriptor.

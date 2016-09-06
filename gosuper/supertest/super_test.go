@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	gosuper "resin-supervisor/gosuper/gosuper"
+	gosuper "github.com/resin-io/resin-supervisor/gosuper/gosuper"
 )
 
 var supervisorAddress string
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("GOPATH is not set - where are you running this?")
 	} else if supervisorIP := os.Getenv("SUPERVISOR_IP"); supervisorIP == "" {
 		log.Fatal("Supervisor IP not set - is it running?")
-	} else if config, err = gosuper.ReadConfig(gopath + "/src/resin-supervisor/gosuper/config.json"); err != nil {
+	} else if config, err = gosuper.ReadConfig(gopath + "/src/github.com/resin-io/resin-supervisor/gosuper/config.json"); err != nil {
 		log.Fatal(err)
 	} else {
 		supervisorAddress = "http://" + supervisorIP + ":48484"

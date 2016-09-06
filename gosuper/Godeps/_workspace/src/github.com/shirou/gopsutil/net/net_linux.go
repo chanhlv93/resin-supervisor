@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
 )
 
 // NetIOCounters returnes network I/O statistics for every network

@@ -3,7 +3,7 @@
 
 package cpu
 
-import "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+import "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
 
 func perCPUTimes() ([]CPUTimesStat, error) {
 	return []CPUTimesStat{}, common.NotImplementedError

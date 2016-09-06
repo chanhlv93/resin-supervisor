@@ -5,8 +5,8 @@ package main
 import (
 	"time"
 
-	ole "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole/oleutil"
+	ole "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole/oleutil"
 )
 
 func main() {

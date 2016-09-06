@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	ole "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
+	ole "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
 )
 
 type stdDispatch struct {

@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"resin-supervisor/gosuper/application/updatestatus"
-	"resin-supervisor/gosuper/config"
-	"resin-supervisor/gosuper/resin"
-	"resin-supervisor/gosuper/supermodels"
-	"resin-supervisor/gosuper/utils"
+	"github.com/resin-io/resin-supervisor/gosuper/application/updatestatus"
+	"github.com/resin-io/resin-supervisor/gosuper/config"
+	"github.com/resin-io/resin-supervisor/gosuper/resin"
+	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
+	"github.com/resin-io/resin-supervisor/gosuper/utils"
 )
 
 var Uuid string

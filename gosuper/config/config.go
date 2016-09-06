@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"resin-supervisor/gosuper/supermodels"
+	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 )
 
 // Default location of the UserConfig config.json

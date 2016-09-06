@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"strings"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/bitly/go-simplejson"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/bitly/go-simplejson"
 )
 
 // oDataEncodeVals URL Encode values and separate with commas.

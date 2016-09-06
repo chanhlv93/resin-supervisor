@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
 )
 
 var (

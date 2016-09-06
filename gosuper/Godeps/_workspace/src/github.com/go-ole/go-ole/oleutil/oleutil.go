@@ -1,6 +1,6 @@
 package oleutil
 
-import ole "resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
+import ole "github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
 
 // ClassIDFrom retrieves class ID whether given is program ID or application string.
 func ClassIDFrom(programID string) (classID *ole.GUID, err error) {

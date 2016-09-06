@@ -89,17 +89,17 @@ gosuper: go-builder
 
 test-gosuper: go-builder
 	-docker rm --volumes -f resin_test_gosuper_$(JOB_NAME) || true
-	docker run --name resin_test_gosuper_$(JOB_NAME) -v /var/run/dbus:/mnt/root/run/dbus -e DBUS_SYSTEM_BUS_ADDRESS="unix:path=/mnt/root/run/dbus/system_bus_socket" resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/resin-supervisor/gosuper && ./test_formatting.sh && ./test_gosuper.sh"
+	docker run --name resin_test_gosuper_$(JOB_NAME) -v /var/run/dbus:/mnt/root/run/dbus -e DBUS_SYSTEM_BUS_ADDRESS="unix:path=/mnt/root/run/dbus/system_bus_socket" resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/github.com/resin-io/resin-supervisor/gosuper && ./test_formatting.sh && ./test_gosuper.sh"
 	docker rm --volumes -f resin_test_gosuper_$(JOB_NAME)
 
 format-gosuper: go-builder
 	-docker rm --volumes -f resin_test_gosuper_$(JOB_NAME) || true
-	docker run --name resin_test_gosuper_$(JOB_NAME) -v $(shell pwd)/gosuper:/usr/src/app/src/resin-supervisor/gosuper resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/resin-supervisor/gosuper && go fmt ./..."
+	docker run --name resin_test_gosuper_$(JOB_NAME) -v $(shell pwd)/gosuper:/usr/src/app/src/github.com/resin-io/resin-supervisor/gosuper resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/github.com/resin-io/resin-supervisor/gosuper && go fmt ./..."
 	docker rm --volumes -f resin_test_gosuper_$(JOB_NAME)
 
 test-integration: go-builder
 	-docker rm --volumes -f resin_test_integration_$(JOB_NAME) || true
-	docker run --name resin_test_integration_$(JOB_NAME) --net=host -e SUPERVISOR_IP="$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' resin_supervisor_1)" --volumes-from resin_supervisor_1 -v /var/run/dbus:/mnt/root/run/dbus -e DBUS_SYSTEM_BUS_ADDRESS="unix:path=/mnt/root/run/dbus/system_bus_socket" resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/resin-supervisor/gosuper && go test -v ./supertest"
+	docker run --name resin_test_integration_$(JOB_NAME) --net=host -e SUPERVISOR_IP="$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' resin_supervisor_1)" --volumes-from resin_supervisor_1 -v /var/run/dbus:/mnt/root/run/dbus -e DBUS_SYSTEM_BUS_ADDRESS="unix:path=/mnt/root/run/dbus/system_bus_socket" resin/go-supervisor-builder:$(SUPERVISOR_VERSION) bash -c "cd src/github.com/resin-io/resin-supervisor/gosuper && go test -v ./supertest"
 	docker rm --volumes -f resin_test_integration_$(JOB_NAME)
 
 .PHONY: supervisor deploy supervisor-dind run-supervisor

@@ -12,10 +12,10 @@ import (
 	"strings"
 	"syscall"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/host"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/cpu"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/host"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/internal/common"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/shirou/gopsutil/net"
 )
 
 const (

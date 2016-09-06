@@ -3,8 +3,8 @@
 package prop
 
 import (
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus/introspect"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/godbus/dbus/introspect"
 	"sync"
 )
 

@@ -37,8 +37,8 @@ import (
 	"sync"
 	"time"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole/oleutil"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/go-ole/go-ole/oleutil"
 )
 
 var l = log.New(os.Stdout, "", log.LstdFlags)

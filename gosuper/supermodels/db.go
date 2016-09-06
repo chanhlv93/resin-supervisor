@@ -3,7 +3,7 @@ package supermodels
 import (
 	"fmt"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/boltdb/bolt"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/boltdb/bolt"
 )
 
 // TODO: Implement migration from SQLite

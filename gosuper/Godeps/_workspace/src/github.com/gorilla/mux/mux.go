@@ -11,7 +11,7 @@ import (
 	"path"
 	"regexp"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/gorilla/context"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/gorilla/context"
 )
 
 // NewRouter returns a new router instance.

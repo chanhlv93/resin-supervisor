@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"time"
 
-	"resin-supervisor/gosuper/Godeps/_workspace/src/github.com/gorilla/mux"
-	"resin-supervisor/gosuper/application"
-	"resin-supervisor/gosuper/systemd"
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/resin-io/resin-supervisor/gosuper/application"
+	"github.com/resin-io/resin-supervisor/gosuper/systemd"
 )
 
 // Compile the expression once, usually at init time.

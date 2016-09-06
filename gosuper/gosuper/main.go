@@ -4,13 +4,13 @@ import (
 	"log"
 	"time"
 
-	"resin-supervisor/gosuper/application"
-	"resin-supervisor/gosuper/config"
-	"resin-supervisor/gosuper/device"
-	"resin-supervisor/gosuper/psutils"
-	"resin-supervisor/gosuper/resin"
-	"resin-supervisor/gosuper/supermodels"
-	"resin-supervisor/gosuper/utils"
+	"github.com/resin-io/resin-supervisor/gosuper/application"
+	"github.com/resin-io/resin-supervisor/gosuper/config"
+	"github.com/resin-io/resin-supervisor/gosuper/device"
+	"github.com/resin-io/resin-supervisor/gosuper/psutils"
+	"github.com/resin-io/resin-supervisor/gosuper/resin"
+	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
+	"github.com/resin-io/resin-supervisor/gosuper/utils"
 )
 
 var ResinDataPath string = "/mnt/root/resin-data/"
