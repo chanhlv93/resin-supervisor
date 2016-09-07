@@ -107,13 +107,18 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 	var uuid string
 	var conf config.UserConfig
 	device.DbConfig = dbConfig
-	dev.SuperConfig = superConfig
+	//dev.SuperConfig = superConfig
+	//log.Printf(dbConfig)
 	if uuid, err = dbConfig.Get("uuid"); err != nil {
 	} else if uuid != "" {
-		if apikey, err := dbConfig.Get("apikey"); err == nil {
+		//log.Printf("-----------------test 1--------------- " + uuid)
+
+		if apikey, err := dbConfig.Get("apiKey"); err == nil {
+			log.Printf(apikey)
 			device.Uuid = uuid
-			device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, apikey)
+			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, apikey)
 			device.FinishBootstrapping()
+			dev = &device
 		} else {
 			// This should *never* happen
 			log.Fatalf("Device is bootstrapped, but could not get apikey from DB: %s", err)
@@ -123,9 +128,9 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 		if uuid, conf, err = device.readConfigAndEnsureUuid(); err == nil {
 			device.Uuid = uuid
 			device.Config = conf
-			device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
-			loadPreloadedApps(appsCollection)
-			device.BootstrapOrRetry()
+			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
+			//loadPreloadedApps(appsCollection)
+			//device.BootstrapOrRetry()
 			dev = &device
 		}
 	}

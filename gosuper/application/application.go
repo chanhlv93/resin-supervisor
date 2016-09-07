@@ -13,6 +13,8 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/device"
 	"github.com/resin-io/resin-supervisor/gosuper/resin"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
+
+	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
 )
 
 type App supermodels.App
@@ -31,10 +33,41 @@ type Manager struct {
 func NewManager(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Config, dev *device.Device, superConfig config.SupervisorConfig) (*Manager, error) {
 	manager := Manager{Apps: appsCollection, Config: dbConfig, Device: dev, PollInterval: 30000, ResinClient: dev.ResinClient, updateStatus: &dev.UpdateStatus, superConfig: superConfig}
 	go manager.UpdateInterval()
+
 	return &manager, nil
 }
 
 func (manager *Manager) UpdateInterval() {
+	//localApps := []App{}
+	var localApps []supermodels.App
+	//Note: You need declare app is type App here to call method kill, fetch, lockpath, start
+
+	err := manager.Apps.List(&localApps);
+	if err != nil {
+		log.Println(err)
+	}
+
+	if len(localApps) > 0 {
+		//var appContainer App
+		//appContainer.AppId = localApps[0].AppId
+		appContainer := App{AppId:localApps[0].AppId, ContainerId: localApps[0].ContainerId, Commit: localApps[0].Commit, Env: localApps[0].Env, ImageId: localApps[0].ImageId}
+		containerIdUpdate, errg := appContainer.GetContainerId("cli-app",manager.superConfig.DockerSocket)
+		if errg !=nil {
+			log.Println(errg)
+		} else {
+			localApps[0].ContainerId = containerIdUpdate
+			manager.Apps.CreateOrUpdate(&localApps[0])
+		}
+	}
+
+	/*app := supermodels.App{App, Commit: "abcd45678", ContainerId: "c09b99a6e66b"}
+	err := manager.Apps.CreateOrUpdate(&app)
+	if err != nil {
+		log.Println(err)
+	} else {
+		app.KillContainer(manager.superConfig.DockerSocket)
+	}*/
+
 	go manager.runUpdates()
 	for {
 		if manager.Device.Bootstrapped {
@@ -116,9 +149,38 @@ func (manager *Manager) scheduleUpdate(t float64, force bool) {
 	}()
 }
 
+// Get container application on device
+func (app *App) GetContainerId(appName, dockerSocket string) (string, error) {
+	var containerId string
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
+		return "", err
+	} else if containers, err := docker.ListContainers(false, false, "{\"name\":[\""+ appName+"\"]}"); err != nil {
+		log.Printf("cannot get container: %s", err)
+	} else if containerInfo, err := docker.InspectContainer(containers[0].Id); err != nil {
+		return "", err
+	} else {
+		containerId = containerInfo.Id[0:12]
+	}
+	return containerId, nil
+}
+
 // TODO: use dockerclient to kill an app
-func (app *App) Kill() (err error) {
+func (app *App) Kill(dockerSocket string) (err error) {
 	log.Printf("Killing app %d", app.AppId)
+
+	log.Printf("Killing app %d - %s", app.AppId, app.ContainerId)
+
+	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+		return err
+	} else {
+		if err := docker.KillContainer(app.ContainerId, ""); err != nil {
+			log.Printf("cannot kill container: %s", err)
+		} else {
+			log.Printf("Kill container success: %s", app.ContainerId)
+		}
+
+		return nil
+	}
 	return
 }
 

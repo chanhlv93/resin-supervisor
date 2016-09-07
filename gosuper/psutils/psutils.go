@@ -70,7 +70,7 @@ func (procs *Procs) AdjustOOMPriority(pid int, value int, ignoreIfNonZero bool) 
 func (procs *Procs) AdjustDockerOOMPriority(connection string, containerName string, value int, ignoreIfNonZero bool) error {
 	if docker, err := dockerclient.NewDockerClient(connection, nil); err != nil {
 		return err
-	} else if containers, err := docker.ListContainers(false, false, fmt.Sprintf(`{"name":["^/%s$"]}`, containerName)); err != nil {
+	} else if containers, err := docker.ListContainers(false, false, "{\"name\":[\""+containerName+"\"]}"); err != nil {
 		return err
 	} else if containerInfo, err := docker.InspectContainer(containers[0].Id); err != nil {
 		return err

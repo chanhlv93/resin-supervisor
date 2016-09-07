@@ -34,7 +34,7 @@ func startOOMProtectionTimer(hostproc string, dockerSocket string) *time.Ticker 
 	ticker := time.NewTicker(time.Minute * 5) //Timer runs every 5 minutes
 	procs := &psutils.Procs{hostproc}
 	log.Println("Changing oom_score_adj for the supervisor container to -800")
-	if err := procs.AdjustDockerOOMPriority("unix://"+dockerSocket, "resin_supervisor", -800, false); err != nil {
+	if err := procs.AdjustDockerOOMPriority("unix://"+dockerSocket, "cli-app", -800, false); err != nil {
 		log.Printf("FAILED to OOM protect supervisor container: %s\n", err)
 	}
 	// Code below this could be eventually deprecated after all the devices are > 5 Jan 2016 deployment as this will be handled in the HOST OS.
@@ -78,7 +78,7 @@ func (supervisor *Supervisor) Start(connectivityCheckEnabled bool, oomProtection
 		if supervisor.ApplicationManager, err = application.NewManager(supervisor.AppsCollection, supervisor.DbConfig, supervisor.Device, supervisor.Config); err != nil {
 			log.Fatalf("Failed to initialize applications manager: %s", err)
 		} else {
-			supervisor.Device.WaitForBootstrap()
+			//supervisor.Device.WaitForBootstrap()
 			// TODO: apikey and log channel generation
 			StartApi(supervisor.Config.ListenPort, supervisor.ApplicationManager)
 			// TODO: Update device state

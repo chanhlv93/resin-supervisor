@@ -49,14 +49,14 @@ func WriteConfig(userConfig UserConfig, path string) (err error) {
 // Configuration for the supervisor
 type SupervisorConfig struct {
 	ApiEndpoint      string `config_env:"API_ENDPOINT" config_default:"https://api.resin.io"`
-	ListenPort       int    `config_env:"LISTEN_PORT" config_default:"48484"`
+	ListenPort       int    `config_env:"LISTEN_PORT" config_default:"81"`
 	RegistryEndpoint string `config_env:"REGISTRY_ENDPOINT" config_default:"registry.resin.io"`
 	Pubnub           struct {
-		SubscribeKey string `config_env:"PUBNUB_SUBSCRIBE_KEY" config_default:"sub-c-bananas"`
-		PublishKey   string `config_env:"PUBNUB_PUBLISH_KEY" config_default:"pub-c-bananas"`
-	}
+				 SubscribeKey string `config_env:"PUBNUB_SUBSCRIBE_KEY" config_default:"sub-c-bananas"`
+				 PublishKey   string `config_env:"PUBNUB_PUBLISH_KEY" config_default:"pub-c-bananas"`
+			 }
 	MixpanelToken         string `config_env:"MIXPANEL_TOKEN" config_default:"bananasbananas"`
-	DockerSocket          string `config_env:"DOCKER_SOCKET" config_default:"/run/docker.sock"`
+	DockerSocket          string `config_env:"DOCKER_SOCKET" config_default:"/var/run/docker.sock"`
 	HostProc              string `config_env:"HOST_PROC" config_default:"/mnt/root/proc"`
 	SupervisorImage       string `config_env:"SUPERVISOR_IMAGE" config_default:"resin/rpi-supervisor"`
 	LedFile               string `config_env:"LED_FILE" config_default:"/sys/class/leds/led0/brightness"`
@@ -64,7 +64,7 @@ type SupervisorConfig struct {
 	AppUpdatePollInterval int    `config_env:"APP_UPDATE_POLL_INTERVAL" config_default:"60000"`
 	ForceApiSecret        string `config_env:"RESIN_SUPERVISOR_SECRET" config_default:""`
 	VpnStatusPath         string `config_env:"VPN_STATUS_PATH" config_default:"/mnt/root/run/openvpn/vpn_status"`
-	DatabasePath          string `config_env:"RESIN_SUPERVISOR_DB_PATH" config_default:"/data/resin-supervisor.db"`
+	DatabasePath          string `config_env:"RESIN_SUPERVISOR_DB_PATH" config_default:"/home/chanh/data/cli-agent.db"`
 }
 
 func populateConfigStruct(value reflect.Value) {
