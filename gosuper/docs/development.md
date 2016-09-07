@@ -40,7 +40,7 @@ git checkout -b myfeature
 
 ```console
 git fetch upstream
-git rebase upstream/master
+git rebase upstream/devel
 ```
 ### Committing changes to your fork
 
