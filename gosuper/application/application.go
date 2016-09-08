@@ -58,7 +58,21 @@ func (manager *Manager) UpdateInterval() {
 			localApps[0].ContainerId = containerIdUpdate
 			manager.Apps.CreateOrUpdate(&localApps[0])
 		}
+
+		if err = appContainer.Stop(manager.superConfig.DockerSocket); err != nil {
+			log.Println(err)
+		} else {
+			if err = appContainer.Start(manager.superConfig.DockerSocket); err != nil {
+				log.Println(err)
+			} else {
+				errpi := appContainer.Fetch(manager.superConfig.DockerSocket)
+				if errpi != nil {
+					log.Println(errpi)
+				}
+			}
+		}
 	}
+
 
 	/*app := supermodels.App{App, Commit: "abcd45678", ContainerId: "c09b99a6e66b"}
 	err := manager.Apps.CreateOrUpdate(&app)
@@ -166,34 +180,85 @@ func (app *App) GetContainerId(appName, dockerSocket string) (string, error) {
 
 // TODO: use dockerclient to kill an app
 func (app *App) Kill(dockerSocket string) (err error) {
-	log.Printf("Killing app %d", app.AppId)
-
 	log.Printf("Killing app %d - %s", app.AppId, app.ContainerId)
-
 	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
 		return err
 	} else {
 		if err := docker.KillContainer(app.ContainerId, ""); err != nil {
-			log.Printf("cannot kill container: %s", err)
+			//log.Printf("cannot kill container: %s", err)
+			return err
 		} else {
 			log.Printf("Kill container success: %s", app.ContainerId)
+			return nil
 		}
-
-		return nil
 	}
 	return
+}
+
+func makeBinding(ip, port string) map[string][]dockerclient.PortBinding {
+	return map[string][]dockerclient.PortBinding{
+		fmt.Sprintf("%s/tcp", port): {
+			{
+				HostIp:   ip,
+				HostPort: port,
+			},
+		},
+	}
 }
 
 // TODO: use dockerclient to start an app
 // TODO: implement logging
 // TODO: implement web terminal
-func (app *App) Start() (err error) {
+func (app *App) Start(dockerSocket string) (err error) {
 	log.Printf("Starting app %d", app.AppId)
+
+	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+		return err
+	} else {
+		config := dockerclient.HostConfig{PortBindings:makeBinding("80","80")}
+		if err := docker.StartContainer(app.ContainerId, &config); err != nil {
+			//log.Printf("cannot start container: %s", err)
+			return err
+		} else {
+			log.Printf("Start container success: %s", app.ContainerId)
+			return nil
+		}
+	}
+	return
+}
+
+func (app *App) Stop(dockerSocket string) (err error) {
+	log.Printf("Stopping app %d", app.AppId)
+
+	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+		return err
+	} else {
+		if err =  docker.StopContainer(app.ContainerId, 5); err != nil {
+			//log.Printf("cannot stop container: %s", err)
+			return err
+		} else {
+			log.Printf("Stop container success: %s", app.ContainerId)
+			return nil
+		}
+	}
 	return
 }
 
 // TODO: use dockerclient or deltas to fetch an app image
-func (app *App) Fetch() (err error) {
+func (app *App) Fetch(dockerSocket string) (err error) {
+	log.Println("pull image")
+
+	authConfig := dockerclient.AuthConfig{Username:"chanhlv93",Password:"chanhlove1993"}
+	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+		return err
+	} else {
+		if err = docker.PullImage("chanhlv93/cli-app", &authConfig); err != nil {
+			log.Printf("cannot pull image: %s", err)
+		} else {
+			log.Println("Pull image success!")
+		}
+	}
+
 	return
 }
 
