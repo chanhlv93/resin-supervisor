@@ -20,7 +20,7 @@ type App struct {
 	ImageId     string
 }
 
-// Create or update an App in the database (identified by its AppId)
+//Create or update an App in the database (identified by its AppId)
 func (apps *AppsCollection) CreateOrUpdate(app *App) error {
 	return apps.db.Update(func(tx *bolt.Tx) (err error) {
 		if jsonApp, err := json.Marshal(app); err == nil {
