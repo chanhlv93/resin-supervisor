@@ -12,6 +12,7 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/config"
 	"github.com/resin-io/resin-supervisor/gosuper/device"
 	"github.com/resin-io/resin-supervisor/gosuper/resin"
+	//"github.com/resin-io/resin-supervisor/gosuper/cliclient"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 
 	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
@@ -32,24 +33,44 @@ type Manager struct {
 
 func NewManager(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Config, dev *device.Device, superConfig config.SupervisorConfig) (*Manager, error) {
 	manager := Manager{Apps: appsCollection, Config: dbConfig, Device: dev, PollInterval: 30000, ResinClient: dev.ResinClient, updateStatus: &dev.UpdateStatus, superConfig: superConfig}
+	go manager.initApp(manager.superConfig.DockerSocket)
 	go manager.UpdateInterval()
 
 	return &manager, nil
 }
 
 func (manager *Manager) UpdateInterval() {
-	//localApps := []App{}
-	var localApps []supermodels.App
-	//Note: You need declare app is type App here to call method kill, fetch, lockpath, start
 
+	/*var localApps []supermodels.App
+	err := manager.Apps.List(&localApps);
+	if err != nil {
+		log.Println(err)
+	}*/
+
+	/*err := manager.InitApp(manager.superConfig.DockerSocket)
+	if err != nil {
+		log.Println(err)
+	}*/
+	//get user config
+	/*if conf, err := config.ReadConfig(config.DefaultConfigPath); err != nil {
+		log.Println(conf)
+	} else {
+		cliClient := cliclient.Client{manager.superConfig.ApiEndpoint, ""}
+
+		if apps, err := cliClient.Getapplication(); err != nil {
+			log.Println(err)
+		} else {
+			log.Println(apps)
+		}
+	}*/
+
+	/*var localApps []supermodels.App
 	err := manager.Apps.List(&localApps);
 	if err != nil {
 		log.Println(err)
 	}
 
 	if len(localApps) > 0 {
-		//var appContainer App
-		//appContainer.AppId = localApps[0].AppId
 		appContainer := App{AppId:localApps[0].AppId, ContainerId: localApps[0].ContainerId, Commit: localApps[0].Commit, Env: localApps[0].Env, ImageId: localApps[0].ImageId}
 		containerIdUpdate, errg := appContainer.GetContainerId("cli-app",manager.superConfig.DockerSocket)
 		if errg !=nil {
@@ -71,7 +92,7 @@ func (manager *Manager) UpdateInterval() {
 				}
 			}
 		}
-	}
+	}*/
 
 
 	/*app := supermodels.App{App, Commit: "abcd45678", ContainerId: "c09b99a6e66b"}
@@ -168,7 +189,7 @@ func (app *App) GetContainerId(appName, dockerSocket string) (string, error) {
 	var containerId string
 	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
 		return "", err
-	} else if containers, err := docker.ListContainers(false, false, "{\"name\":[\""+ appName+"\"]}"); err != nil {
+	} else if containers, err := docker.ListContainers(false, false, "{\"name\":[\"" + appName + "\"]}"); err != nil {
 		log.Printf("cannot get container: %s", err)
 	} else if containerInfo, err := docker.InspectContainer(containers[0].Id); err != nil {
 		return "", err
@@ -181,7 +202,7 @@ func (app *App) GetContainerId(appName, dockerSocket string) (string, error) {
 // TODO: use dockerclient to kill an app
 func (app *App) Kill(dockerSocket string) (err error) {
 	log.Printf("Killing app %d - %s", app.AppId, app.ContainerId)
-	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
 		return err
 	} else {
 		if err := docker.KillContainer(app.ContainerId, ""); err != nil {
@@ -212,10 +233,10 @@ func makeBinding(ip, port string) map[string][]dockerclient.PortBinding {
 func (app *App) Start(dockerSocket string) (err error) {
 	log.Printf("Starting app %d", app.AppId)
 
-	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
 		return err
 	} else {
-		config := dockerclient.HostConfig{PortBindings:makeBinding("80","80")}
+		config := dockerclient.HostConfig{PortBindings:makeBinding("80", "80")}
 		if err := docker.StartContainer(app.ContainerId, &config); err != nil {
 			//log.Printf("cannot start container: %s", err)
 			return err
@@ -230,10 +251,10 @@ func (app *App) Start(dockerSocket string) (err error) {
 func (app *App) Stop(dockerSocket string) (err error) {
 	log.Printf("Stopping app %d", app.AppId)
 
-	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
 		return err
 	} else {
-		if err =  docker.StopContainer(app.ContainerId, 5); err != nil {
+		if err = docker.StopContainer(app.ContainerId, 5); err != nil {
 			//log.Printf("cannot stop container: %s", err)
 			return err
 		} else {
@@ -248,8 +269,8 @@ func (app *App) Stop(dockerSocket string) (err error) {
 func (app *App) Fetch(dockerSocket string) (err error) {
 	log.Println("pull image")
 
-	authConfig := dockerclient.AuthConfig{Username:"chanhlv93",Password:"chanhlove1993"}
-	if docker, err := dockerclient.NewDockerClient("unix://"+dockerSocket, nil); err != nil {
+	authConfig := dockerclient.AuthConfig{Username:"chanhlv93", Password:"chanhlove1993"}
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
 		return err
 	} else {
 		if err = docker.PullImage("chanhlv93/cli-app", &authConfig); err != nil {
@@ -260,6 +281,33 @@ func (app *App) Fetch(dockerSocket string) (err error) {
 	}
 
 	return
+}
+
+// TODO: Create function to pull & run sample app
+func (manage *Manager) initApp(dockerSocket string) {
+	log.Println("initializing container application")
+
+	authConfig := dockerclient.AuthConfig{Username:"chanhlv93", Password:"chanhlove1993"}
+	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
+		log.Println(err)
+	} else if err = docker.PullImage("chanhlv93/cli-app", &authConfig); err != nil {
+		log.Println(err)
+	} else {
+		containerConfig := &dockerclient.ContainerConfig{
+			Image: "chanhlv93/cli-app",
+		}
+
+		if containerId, err := docker.CreateContainer(containerConfig, "cli-app", nil); err != nil {
+			log.Println(err)
+		} else {
+			config := dockerclient.HostConfig{PortBindings:makeBinding("80", "80")}
+			if err := docker.StartContainer(containerId, &config); err != nil {
+				log.Printf("cannot start container: %s", err)
+			} else {
+				log.Printf("Start container success: %s", containerId)
+			}
+		}
+	}
 }
 
 type AppCallback supermodels.AppCallback
@@ -276,7 +324,7 @@ func (manager Manager) LockAndDo(app *App, callback AppCallback) error {
 	return manager.Apps.GetAndDo((*supermodels.App)(app), func(appFromDB *supermodels.App) error {
 		theApp := (*App)(appFromDB)
 		path := theApp.LockPath()
-		if lock, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0777); err != nil {
+		if lock, err := os.OpenFile(path, os.O_WRONLY | os.O_CREATE | os.O_EXCL, 0777); err != nil {
 			return err
 		} else {
 			err = callback(appFromDB)

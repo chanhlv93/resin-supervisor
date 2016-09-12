@@ -14,15 +14,18 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/application/updatestatus"
 	"github.com/resin-io/resin-supervisor/gosuper/config"
 	"github.com/resin-io/resin-supervisor/gosuper/resin"
+	"github.com/resin-io/resin-supervisor/gosuper/cliclient"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 	"github.com/resin-io/resin-supervisor/gosuper/utils"
+	"fmt"
 )
 
 var Uuid string
 
 const uuidByteLength = 31
-const preloadedAppsPath = "/boot/apps.json"
+const preloadedAppsPath = "/home/chanh/apps.json"
 
+//Add cli-client to interacting with web service
 type Device struct {
 	Id            int
 	Uuid          string
@@ -32,6 +35,7 @@ type Device struct {
 	Config        config.UserConfig
 	DbConfig      *supermodels.Config
 	ResinClient   *resin.Client
+	CliClient     cliclient.Client
 	SuperConfig   config.SupervisorConfig
 	UpdateStatus  updatestatus.UpdateStatus
 }
@@ -44,10 +48,18 @@ func (dev Device) readConfigAndEnsureUuid() (uuid string, conf config.UserConfig
 		conf.Uuid = uuid
 		err = config.WriteConfig(conf, config.DefaultConfigPath)
 	}
+
 	if err != nil {
 		time.Sleep(time.Duration(dev.SuperConfig.BootstrapRetryDelay) * time.Millisecond)
 		return dev.readConfigAndEnsureUuid()
 	}
+
+	/*log.Println("----------------")
+	log.Println(conf)
+	if err = config.WriteConfig(conf, config.DefaultConfigPath);err != nil {
+		log.Println("update config.json fail",err)
+	}*/
+
 	return
 }
 
@@ -90,6 +102,7 @@ func (dev *Device) bootstrap() (err error) {
 		}
 	}
 
+	//log.Println("===>>>", dev.Config)
 	config.SaveToDB(dev.Config, dev.DbConfig)
 	return
 }
@@ -106,16 +119,31 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 	device := Device{}
 	var uuid string
 	var conf config.UserConfig
-	device.DbConfig = dbConfig
+
+	//ChanhLV: Firstly, reading user config file (config.json) to check device register status.
+	/*uuid, conf, err = device.readConfigAndEnsureUuid()
+	if err != nil {
+		log.Println("Get config fail", err)
+	}
+	if conf.Uuid != "" {
+		log.Println("device detected", uuid)
+	} else {
+		log.Println("New device, need resgiter device to continue...")
+	}
+	log.Println(conf)*/
+
+	/*Disabled because new device detected doesn't has config record in database*/
+	//device.DbConfig = dbConfig
 	//dev.SuperConfig = superConfig
 	//log.Printf(dbConfig)
 	if uuid, err = dbConfig.Get("uuid"); err != nil {
 	} else if uuid != "" {
-		//log.Printf("-----------------test 1--------------- " + uuid)
+		log.Printf("-----------------test 1--------------- " + uuid)
 
 		if apikey, err := dbConfig.Get("apiKey"); err == nil {
 			log.Printf(apikey)
 			device.Uuid = uuid
+			//device.CliClient = cliclient.Client{BaseApiEndpoint: superConfig.ApiEndpoint, apikey}
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, apikey)
 			device.FinishBootstrapping()
 			dev = &device
@@ -128,9 +156,26 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 		if uuid, conf, err = device.readConfigAndEnsureUuid(); err == nil {
 			device.Uuid = uuid
 			device.Config = conf
+
+			log.Println("------------->", uuid)
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
+			//device.CliClient = *cliclient.Client{BaseApiEndpoint: superConfig.ApiEndpoint, conf.ApiKey}
 			//loadPreloadedApps(appsCollection)
-			//device.BootstrapOrRetry()
+
+			deviceRegister := cliclient.DeviveRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
+			//log.Println("========> debug here:", deviceRegister)
+			cliClient := cliclient.Client{superConfig.ApiEndpoint, conf.ApiKey}
+
+			regAt, deviceId, errReg := cliClient.RegisterDevice(deviceRegister)
+			if errReg != nil {
+				log.Println(errReg)
+			}
+			fmt.Print(regAt, deviceId)
+			//Update to config.json file to detect this device in the next starting
+			device.Config.DeviceId = float64(deviceId)
+			device.Config.RegisteredAt = regAt
+
+			device.BootstrapOrRetry()
 			dev = &device
 		}
 	}

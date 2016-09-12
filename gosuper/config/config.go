@@ -13,19 +13,20 @@ import (
 )
 
 // Default location of the UserConfig config.json
-const DefaultConfigPath = "/boot/config.json"
+const DefaultConfigPath = "/home/chanh/config/config.json"
 const packageJsonPath = "/app/package.json"
 
 // UserConfig: resin's config.json with information about this device
 type UserConfig struct {
-	ApplicationId string  `json:"applicationId"`
-	ApiKey        string  `json:"apikey"`
-	UserId        string  `json:"userId"`
-	Username      string  `json:"username"`
-	DeviceType    string  `json:"deviceType"`
-	Uuid          string  `json:"uuid,omitempty"`
-	RegisteredAt  float64 `json:"registered_at,omitempty"`
-	DeviceId      float64 `json:"deviceId,omitempty"`
+	ApplicationName		string  `json:"applicationName"`
+	ApplicationId 		string  `json:"applicationId"`
+	ApiKey        		string  `json:"apikey"`
+	UserId        		string  `json:"userId"`
+	Username      		string  `json:"username"`
+	DeviceType    		string  `json:"deviceType"`
+	Uuid          		string  `json:"uuid,omitempty"`
+	RegisteredAt  		float64 `json:"registered_at,omitempty"`
+	DeviceId      		float64 `json:"deviceId,omitempty"`
 }
 
 // Reads a UserConfig structure from path
@@ -40,6 +41,7 @@ func ReadConfig(path string) (config UserConfig, err error) {
 // Writes a UserConfig structure to a JSON file at path
 // TODO: make it atomic
 func WriteConfig(userConfig UserConfig, path string) (err error) {
+	log.Println("write config to config.json after generate uuid")
 	if data, err := json.Marshal(userConfig); err == nil {
 		err = ioutil.WriteFile(path, data, 0666)
 	}
@@ -48,7 +50,7 @@ func WriteConfig(userConfig UserConfig, path string) (err error) {
 
 // Configuration for the supervisor
 type SupervisorConfig struct {
-	ApiEndpoint      string `config_env:"API_ENDPOINT" config_default:"https://api.resin.io"`
+	ApiEndpoint      string `config_env:"API_ENDPOINT" config_default:"http://127.0.0.1:8080"`
 	ListenPort       int    `config_env:"LISTEN_PORT" config_default:"81"`
 	RegistryEndpoint string `config_env:"REGISTRY_ENDPOINT" config_default:"registry.resin.io"`
 	Pubnub           struct {
@@ -144,11 +146,12 @@ func SaveToDB(config UserConfig, db *supermodels.Config) (err error) {
 	keyvals["apiKey"] = config.ApiKey
 	keyvals["username"] = config.Username
 	keyvals["userId"] = config.UserId
-	if v, e := GetSupervisorVersion(); e == nil {
+
+	/*if v, e := GetSupervisorVersion(); e == nil {
 		keyvals["version"] = v
 	} else {
 		log.Printf("Unable to get supervisor version: %s", e)
-	}
+	}*/
 
 	if err = db.SetBatch(keyvals); err != nil {
 		log.Printf("Unable to save config to database: %s", err)

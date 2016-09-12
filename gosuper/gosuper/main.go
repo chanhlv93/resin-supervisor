@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"time"
+	"math/rand"
 
 	"github.com/resin-io/resin-supervisor/gosuper/application"
 	"github.com/resin-io/resin-supervisor/gosuper/config"
@@ -22,6 +23,10 @@ type Supervisor struct {
 	ResinClient        *resin.Client
 	Device             *device.Device
 	ApplicationManager *application.Manager
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
 
 // TODO: implement connectivityCheck
@@ -61,7 +66,7 @@ func (supervisor *Supervisor) Start(connectivityCheckEnabled bool, oomProtection
 
 	if oomProtectionEnabled {
 		// Start OOMProtectionTimer for protecting Openvpn/Connman
-		defer startOOMProtectionTimer(supervisor.Config.HostProc, supervisor.Config.DockerSocket).Stop()
+		//defer startOOMProtectionTimer(supervisor.Config.HostProc, supervisor.Config.DockerSocket).Stop()
 	}
 
 	if err = utils.MixpanelInit(supervisor.Config.MixpanelToken); err != nil {
