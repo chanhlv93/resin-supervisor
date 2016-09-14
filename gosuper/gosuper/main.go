@@ -11,7 +11,7 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/psutils"
 	"github.com/resin-io/resin-supervisor/gosuper/resin"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
-	"github.com/resin-io/resin-supervisor/gosuper/utils"
+	//"github.com/resin-io/resin-supervisor/gosuper/utils"
 )
 
 var ResinDataPath string = "/mnt/root/resin-data/"
@@ -64,22 +64,24 @@ func (supervisor *Supervisor) Start(connectivityCheckEnabled bool, oomProtection
 
 	supervisor.Config = config.GetSupervisorConfig()
 
+	// Disable VPN connection
 	if oomProtectionEnabled {
 		// Start OOMProtectionTimer for protecting Openvpn/Connman
 		//defer startOOMProtectionTimer(supervisor.Config.HostProc, supervisor.Config.DockerSocket).Stop()
 	}
 
-	if err = utils.MixpanelInit(supervisor.Config.MixpanelToken); err != nil {
-		log.Printf("Failed to initialize Mixpanel client: %s", err)
-	}
+	// Disable Mixpanel
+	//if err = utils.MixpanelInit(supervisor.Config.MixpanelToken); err != nil {
+	//	log.Printf("Failed to initialize Mixpanel client: %s", err)
+	//}
 
 	if supervisor.AppsCollection, supervisor.DbConfig, err = supermodels.New(supervisor.Config.DatabasePath); err != nil {
 		log.Fatalf("Failed to start database: %s", err)
 	} else if supervisor.Device, err = device.New(supervisor.AppsCollection, supervisor.DbConfig, supervisor.Config); err != nil {
 		log.Fatalf("Failed to start device bootstrapping: %s", err)
 	} else {
-		utils.MixpanelSetId(supervisor.Device.Uuid)
-		supervisor.ResinClient = supervisor.Device.ResinClient
+		//utils.MixpanelSetId(supervisor.Device.Uuid)
+		//supervisor.ResinClient = supervisor.Device.ResinClient
 		if supervisor.ApplicationManager, err = application.NewManager(supervisor.AppsCollection, supervisor.DbConfig, supervisor.Device, supervisor.Config); err != nil {
 			log.Fatalf("Failed to initialize applications manager: %s", err)
 		} else {

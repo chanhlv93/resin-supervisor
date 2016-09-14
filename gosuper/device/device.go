@@ -23,7 +23,7 @@ import (
 var Uuid string
 
 const uuidByteLength = 31
-const preloadedAppsPath = "/home/chanh/apps.json"
+const preloadedAppsPath = "/tmp/agent/apps.json"
 
 //Add cli-client to interacting with web service
 type Device struct {
@@ -53,12 +53,6 @@ func (dev Device) readConfigAndEnsureUuid() (uuid string, conf config.UserConfig
 		time.Sleep(time.Duration(dev.SuperConfig.BootstrapRetryDelay) * time.Millisecond)
 		return dev.readConfigAndEnsureUuid()
 	}
-
-	/*log.Println("----------------")
-	log.Println(conf)
-	if err = config.WriteConfig(conf, config.DefaultConfigPath);err != nil {
-		log.Println("update config.json fail",err)
-	}*/
 
 	return
 }
@@ -102,13 +96,12 @@ func (dev *Device) bootstrap() (err error) {
 		}
 	}
 
-	//log.Println("===>>>", dev.Config)
 	config.SaveToDB(dev.Config, dev.DbConfig)
 	return
 }
 
 func (dev *Device) BootstrapOrRetry() {
-	utils.MixpanelTrack("Device bootstrap", nil)
+	//utils.MixpanelTrack("Device bootstrap", nil)
 	if err := dev.bootstrap(); err != nil {
 		log.Printf("Device bootstrap failed, retrying: %s", err)
 		time.AfterFunc(time.Duration(dev.SuperConfig.BootstrapRetryDelay)*time.Millisecond, dev.BootstrapOrRetry)
@@ -120,30 +113,16 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 	var uuid string
 	var conf config.UserConfig
 
-	//ChanhLV: Firstly, reading user config file (config.json) to check device register status.
-	/*uuid, conf, err = device.readConfigAndEnsureUuid()
-	if err != nil {
-		log.Println("Get config fail", err)
-	}
-	if conf.Uuid != "" {
-		log.Println("device detected", uuid)
-	} else {
-		log.Println("New device, need resgiter device to continue...")
-	}
-	log.Println(conf)*/
-
 	/*Disabled because new device detected doesn't has config record in database*/
-	//device.DbConfig = dbConfig
-	//dev.SuperConfig = superConfig
-	//log.Printf(dbConfig)
+	device.DbConfig = dbConfig
+	device.SuperConfig = superConfig
+
 	if uuid, err = dbConfig.Get("uuid"); err != nil {
 	} else if uuid != "" {
-		log.Printf("-----------------test 1--------------- " + uuid)
-
+		log.Printf("Found registered device with uuid: " + uuid)
 		if apikey, err := dbConfig.Get("apiKey"); err == nil {
-			log.Printf(apikey)
+			log.Printf("API key: ",apikey)
 			device.Uuid = uuid
-			//device.CliClient = cliclient.Client{BaseApiEndpoint: superConfig.ApiEndpoint, apikey}
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, apikey)
 			device.FinishBootstrapping()
 			dev = &device
@@ -157,13 +136,11 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 			device.Uuid = uuid
 			device.Config = conf
 
-			log.Println("------------->", uuid)
+			log.Println("device uuid------> ", uuid)
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
-			//device.CliClient = *cliclient.Client{BaseApiEndpoint: superConfig.ApiEndpoint, conf.ApiKey}
-			//loadPreloadedApps(appsCollection)
+			loadPreloadedApps(appsCollection)
 
-			deviceRegister := cliclient.DeviveRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
-			//log.Println("========> debug here:", deviceRegister)
+			deviceRegister := cliclient.DeviceRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
 			cliClient := cliclient.Client{superConfig.ApiEndpoint, conf.ApiKey}
 
 			regAt, deviceId, errReg := cliClient.RegisterDevice(deviceRegister)
@@ -171,6 +148,7 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 				log.Println(errReg)
 			}
 			fmt.Print(regAt, deviceId)
+
 			//Update to config.json file to detect this device in the next starting
 			device.Config.DeviceId = float64(deviceId)
 			device.Config.RegisteredAt = regAt

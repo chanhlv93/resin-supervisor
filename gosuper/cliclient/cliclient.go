@@ -7,6 +7,7 @@ import (
 	"github.com/go-resty/resty"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 
+	"fmt"
 )
 
 type Client struct {
@@ -14,7 +15,7 @@ type Client struct {
 	ApiKey 		string
 }
 
-type DeviveRegister struct {
+type DeviceRegister struct {
 	Id 		int		`json:"Id,omitempty"`
 	Name 		string 		`json:"name"`
 	Appid 		string 		`json:"appid"`
@@ -38,7 +39,8 @@ func (client *Client) Getapplication() (apps []supermodels.App, err error) {
 	return
 }
 
-func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt float64, deviceId int, err error) {
+func (client *Client) RegisterDevice(devRegister DeviceRegister) (registeredAt float64, deviceId int, err error) {
+	fmt.Printf("devRegister = ", devRegister)
 	resp, err := resty.R().
 		SetQueryString("apikey=" + client.ApiKey).
 		SetHeader("Content-Type", "application/json").
@@ -50,13 +52,11 @@ func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt f
 	if err != nil {
 		log.Println(err)
 	}
-	//log.Println(resp.Body())
 
-	var deviceRegistered DeviveRegister
+	var deviceRegistered DeviceRegister
 	registeredAtFloat64 := float64(time.Now().Unix())
 	registeredAt = registeredAtFloat64
 
-	log.Println(resp.fmt)
 	if err := json.Unmarshal(resp.Body(), &deviceRegistered); err != nil {
 		log.Println(err)
 	}

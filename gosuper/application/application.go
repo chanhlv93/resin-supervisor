@@ -33,76 +33,13 @@ type Manager struct {
 
 func NewManager(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Config, dev *device.Device, superConfig config.SupervisorConfig) (*Manager, error) {
 	manager := Manager{Apps: appsCollection, Config: dbConfig, Device: dev, PollInterval: 30000, ResinClient: dev.ResinClient, updateStatus: &dev.UpdateStatus, superConfig: superConfig}
-	go manager.initApp(manager.superConfig.DockerSocket)
+	//go manager.initApp(manager.superConfig.DockerSocket)
 	go manager.UpdateInterval()
 
 	return &manager, nil
 }
 
 func (manager *Manager) UpdateInterval() {
-
-	/*var localApps []supermodels.App
-	err := manager.Apps.List(&localApps);
-	if err != nil {
-		log.Println(err)
-	}*/
-
-	/*err := manager.InitApp(manager.superConfig.DockerSocket)
-	if err != nil {
-		log.Println(err)
-	}*/
-	//get user config
-	/*if conf, err := config.ReadConfig(config.DefaultConfigPath); err != nil {
-		log.Println(conf)
-	} else {
-		cliClient := cliclient.Client{manager.superConfig.ApiEndpoint, ""}
-
-		if apps, err := cliClient.Getapplication(); err != nil {
-			log.Println(err)
-		} else {
-			log.Println(apps)
-		}
-	}*/
-
-	/*var localApps []supermodels.App
-	err := manager.Apps.List(&localApps);
-	if err != nil {
-		log.Println(err)
-	}
-
-	if len(localApps) > 0 {
-		appContainer := App{AppId:localApps[0].AppId, ContainerId: localApps[0].ContainerId, Commit: localApps[0].Commit, Env: localApps[0].Env, ImageId: localApps[0].ImageId}
-		containerIdUpdate, errg := appContainer.GetContainerId("cli-app",manager.superConfig.DockerSocket)
-		if errg !=nil {
-			log.Println(errg)
-		} else {
-			localApps[0].ContainerId = containerIdUpdate
-			manager.Apps.CreateOrUpdate(&localApps[0])
-		}
-
-		if err = appContainer.Stop(manager.superConfig.DockerSocket); err != nil {
-			log.Println(err)
-		} else {
-			if err = appContainer.Start(manager.superConfig.DockerSocket); err != nil {
-				log.Println(err)
-			} else {
-				errpi := appContainer.Fetch(manager.superConfig.DockerSocket)
-				if errpi != nil {
-					log.Println(errpi)
-				}
-			}
-		}
-	}*/
-
-
-	/*app := supermodels.App{App, Commit: "abcd45678", ContainerId: "c09b99a6e66b"}
-	err := manager.Apps.CreateOrUpdate(&app)
-	if err != nil {
-		log.Println(err)
-	} else {
-		app.KillContainer(manager.superConfig.DockerSocket)
-	}*/
-
 	go manager.runUpdates()
 	for {
 		if manager.Device.Bootstrapped {

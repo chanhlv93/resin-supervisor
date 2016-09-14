@@ -13,8 +13,8 @@ import (
 )
 
 // Default location of the UserConfig config.json
-const DefaultConfigPath = "/home/chanh/config/config.json"
-const packageJsonPath = "/app/package.json"
+const DefaultConfigPath = "/tmp/agent/config/config.json"
+const packageJsonPath = "/tmp/agent/app/package.json"
 
 // UserConfig: resin's config.json with information about this device
 type UserConfig struct {
@@ -66,7 +66,7 @@ type SupervisorConfig struct {
 	AppUpdatePollInterval int    `config_env:"APP_UPDATE_POLL_INTERVAL" config_default:"60000"`
 	ForceApiSecret        string `config_env:"RESIN_SUPERVISOR_SECRET" config_default:""`
 	VpnStatusPath         string `config_env:"VPN_STATUS_PATH" config_default:"/mnt/root/run/openvpn/vpn_status"`
-	DatabasePath          string `config_env:"RESIN_SUPERVISOR_DB_PATH" config_default:"/home/chanh/data/cli-agent.db"`
+	DatabasePath          string `config_env:"RESIN_SUPERVISOR_DB_PATH" config_default:"/tmp/agent/data/cli-agent.db"`
 }
 
 func populateConfigStruct(value reflect.Value) {
