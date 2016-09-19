@@ -11,11 +11,16 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/application/updatestatus"
 	"github.com/resin-io/resin-supervisor/gosuper/config"
 	"github.com/resin-io/resin-supervisor/gosuper/device"
-	"github.com/resin-io/resin-supervisor/gosuper/resin"
+	//"github.com/resin-io/resin-supervisor/gosuper/resin"
 	//"github.com/resin-io/resin-supervisor/gosuper/cliclient"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
-
 	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
+	"github.com/resin-io/resin-supervisor/gosuper/cliclient"
+)
+
+const (
+	DeviceUpdate = "updating"
+	DeviceUpdateFinish = "updated"
 )
 
 type App supermodels.App
@@ -25,15 +30,19 @@ type Manager struct {
 	Apps                 *supermodels.AppsCollection
 	Config               *supermodels.Config
 	PollInterval         int64
-	ResinClient          *resin.Client
+	CliClient            cliclient.Client
 	superConfig          config.SupervisorConfig
 	updateStatus         *updatestatus.UpdateStatus
 	updateTriggerChannel chan bool
 }
 
 func NewManager(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Config, dev *device.Device, superConfig config.SupervisorConfig) (*Manager, error) {
-	manager := Manager{Apps: appsCollection, Config: dbConfig, Device: dev, PollInterval: 30000, ResinClient: dev.ResinClient, updateStatus: &dev.UpdateStatus, superConfig: superConfig}
+	manager := Manager{Apps: appsCollection, Config: dbConfig, Device: dev, PollInterval: 30000, CliClient: dev.CliClient, updateStatus: &dev.UpdateStatus, superConfig: superConfig}
 	//go manager.initApp(manager.superConfig.DockerSocket)
+	if !manager.Device.Bootstrapped {
+		go manager.loadPreloadedApps()
+	}
+
 	go manager.UpdateInterval()
 
 	return &manager, nil
@@ -83,7 +92,7 @@ func (manager *Manager) update(force bool) {
 		// Get apps from API
 		if deviceId, err := manager.Device.GetId(); err != nil {
 			return err
-		} else if remoteApps, err := manager.ResinClient.GetApps(manager.Device.Uuid, manager.superConfig.RegistryEndpoint, strconv.Itoa(deviceId)); err != nil {
+		} else if remoteApps, err := manager.CliClient.GetApps(manager.Device.Uuid, manager.superConfig.RegistryEndpoint, strconv.Itoa(deviceId)); err != nil {
 			return err
 		} else if err = manager.Apps.List(&localApps); err != nil {
 			return err
@@ -119,6 +128,49 @@ func (manager *Manager) scheduleUpdate(t float64, force bool) {
 		<-time.After(time.Duration(t) * time.Millisecond)
 		manager.updateTriggerChannel <- force
 	}()
+}
+
+// TODO: Create function to pull & run sample app
+func (manager *Manager)loadPreloadedApps() {
+	//log.Println("-------> start application default, call api update")
+	manager.CliClient.UpdateState(manager.Device.Config.ApplicationId, manager.Device.Config.DeviceId, DeviceUpdate)
+	var err error
+	appDefault := supermodels.App{AppId: manager.Device.Config.ApplicationId, ContainerId:"", Commit:"", Env:nil, ImageId:"chanhlv93/cli-app"}
+	if err = manager.Apps.CreateOrUpdate(&appDefault); err != nil {
+		log.Println(err)
+		return
+	}
+
+	var appName = "cli-app"
+	var imageName string = "chanhlv93/" + appName
+	//Hard code docker hub user
+	authConfig := dockerclient.AuthConfig{Username:"chanhlv93", Password:"chanhlove1993"}
+	if docker, err := dockerclient.NewDockerClient("unix://" + manager.superConfig.DockerSocket, nil); err != nil {
+		log.Println(err)
+	} else if err = docker.PullImage(imageName, &authConfig); err != nil {
+		log.Println(err)
+	} else {
+		containerConfig := &dockerclient.ContainerConfig{
+			Image: imageName,
+		}
+
+		if containerId, err := docker.CreateContainer(containerConfig, appName, nil); err != nil {
+			log.Println(err)
+		} else {
+			config := dockerclient.HostConfig{PortBindings:makeBinding("80", "80")}
+			if err := docker.StartContainer(containerId, &config); err != nil {
+				log.Printf("cannot start container: %s", err)
+			} else {
+				log.Printf("Start container success: %s", containerId)
+				appDefault.ContainerId = containerId[0:12]
+				if err = manager.Apps.CreateOrUpdate(&appDefault); err != nil {
+					log.Println(err)
+				}
+			}
+		}
+	}
+
+	manager.CliClient.UpdateState(manager.Device.Config.ApplicationId, manager.Device.Config.DeviceId, DeviceUpdateFinish)
 }
 
 // Get container application on device
@@ -218,33 +270,6 @@ func (app *App) Fetch(dockerSocket string) (err error) {
 	}
 
 	return
-}
-
-// TODO: Create function to pull & run sample app
-func (manage *Manager) initApp(dockerSocket string) {
-	log.Println("initializing container application")
-
-	authConfig := dockerclient.AuthConfig{Username:"chanhlv93", Password:"chanhlove1993"}
-	if docker, err := dockerclient.NewDockerClient("unix://" + dockerSocket, nil); err != nil {
-		log.Println(err)
-	} else if err = docker.PullImage("chanhlv93/cli-app", &authConfig); err != nil {
-		log.Println(err)
-	} else {
-		containerConfig := &dockerclient.ContainerConfig{
-			Image: "chanhlv93/cli-app",
-		}
-
-		if containerId, err := docker.CreateContainer(containerConfig, "cli-app", nil); err != nil {
-			log.Println(err)
-		} else {
-			config := dockerclient.HostConfig{PortBindings:makeBinding("80", "80")}
-			if err := docker.StartContainer(containerId, &config); err != nil {
-				log.Printf("cannot start container: %s", err)
-			} else {
-				log.Printf("Start container success: %s", containerId)
-			}
-		}
-	}
 }
 
 type AppCallback supermodels.AppCallback

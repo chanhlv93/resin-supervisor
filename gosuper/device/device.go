@@ -4,9 +4,7 @@ package device
 // TODO: implement ApplyBootConfig
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log"
 	"sync"
 	"time"
@@ -19,8 +17,6 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/utils"
 	"fmt"
 )
-
-var Uuid string
 
 const uuidByteLength = 31
 const preloadedAppsPath = "/tmp/agent/apps.json"
@@ -58,21 +54,28 @@ func (dev Device) readConfigAndEnsureUuid() (uuid string, conf config.UserConfig
 }
 
 // This should be moved to application or supermodels?
-func loadPreloadedApps(appsCollection *supermodels.AppsCollection) {
-	var err error
-	var apps []supermodels.App
-	if data, err := ioutil.ReadFile(preloadedAppsPath); err == nil {
-		if err = json.Unmarshal(data, &apps); err == nil {
-			for _, app := range apps {
-				if err = appsCollection.CreateOrUpdate(&app); err != nil {
-					break
-				}
-			}
+func loadPreloadedApps(appsCollection *supermodels.AppsCollection, dockerSocket string, appid int) {
+	log.Println("------------------> START LOAD PREPARE APP")
+	/*var err error
+	// Create app default in agent database
+	appDefault := application.App{AppId: appid, ContainerId:"", Commit:"", Env:nil, ImageId:"chanhlv93/cli-app"}
+	if err = appsCollection.CreateOrUpdate(&appDefault); err != nil {
+		log.Println(err)
+		return
+	}
+	//Run default container app
+	application.StartDefaultApp(dockerSocket)
+
+	if containerIdUpdate, err := appDefault.GetContainerId("cli-app", dockerSocket); err != nil {
+		log.Println(err)
+	} else {
+		appDefault.ContainerId = containerIdUpdate
+		if err = appsCollection.CreateOrUpdate(&appDefault); err != nil {
+			log.Println(err)
 		}
-	}
-	if err != nil {
-		log.Printf("Could not load preloaded apps: %s", err)
-	}
+	}*/
+
+	log.Println("------------------> FINISHED LOAD PREPARE APP")
 }
 
 // TODO use dev.ResinClient.RegisterDevice
@@ -86,8 +89,8 @@ func (dev *Device) bootstrap() (err error) {
 	}
 	if dev.Config.RegisteredAt == 0 {
 		if registeredAt, deviceId, err := dev.register(); err == nil {
-			dev.Config.RegisteredAt = float64(registeredAt)
-			dev.Config.DeviceId = float64(deviceId)
+			dev.Config.RegisteredAt = registeredAt
+			dev.Config.DeviceId = deviceId
 			if err = config.WriteConfig(dev.Config, config.DefaultConfigPath); err != nil {
 				return err
 			}
@@ -96,7 +99,8 @@ func (dev *Device) bootstrap() (err error) {
 		}
 	}
 
-	config.SaveToDB(dev.Config, dev.DbConfig)
+	//log.Println("===>>> Save to db")
+	err = config.SaveToDB(dev.Config, dev.DbConfig)
 	return
 }
 
@@ -113,16 +117,16 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 	var uuid string
 	var conf config.UserConfig
 
-	/*Disabled because new device detected doesn't has config record in database*/
 	device.DbConfig = dbConfig
 	device.SuperConfig = superConfig
-
+	//log.Printf(dbConfig)
 	if uuid, err = dbConfig.Get("uuid"); err != nil {
 	} else if uuid != "" {
 		log.Printf("Found registered device with uuid: " + uuid)
 		if apikey, err := dbConfig.Get("apiKey"); err == nil {
-			log.Printf("API key: ",apikey)
 			device.Uuid = uuid
+			device.CliClient = cliclient.Client{BaseApiEndpoint: device.SuperConfig.ApiEndpoint, ApiKey:apikey}
+
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, apikey)
 			device.FinishBootstrapping()
 			dev = &device
@@ -133,25 +137,28 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 	} else {
 		log.Printf("New device detected, bootstrapping...")
 		if uuid, conf, err = device.readConfigAndEnsureUuid(); err == nil {
+			//device.UpdateStatus()
 			device.Uuid = uuid
 			device.Config = conf
 
-			log.Println("device uuid------> ", uuid)
+			device.Config.Uuid = uuid
+			//device.Config.DeviceType = conf.DeviceType
+
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
-			loadPreloadedApps(appsCollection)
+			deviceRegister := cliclient.DeviveRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
+			//Set up cli client with needed informations to call other func.
+			device.CliClient = cliclient.Client{BaseApiEndpoint: device.SuperConfig.ApiEndpoint, ApiKey:conf.ApiKey}
 
-			deviceRegister := cliclient.DeviceRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
-			cliClient := cliclient.Client{superConfig.ApiEndpoint, conf.ApiKey}
-
-			regAt, deviceId, errReg := cliClient.RegisterDevice(deviceRegister)
+			regAt, deviceId, errReg := device.CliClient.RegisterDevice(deviceRegister)
 			if errReg != nil {
 				log.Println(errReg)
 			}
-			fmt.Print(regAt, deviceId)
 
-			//Update to config.json file to detect this device in the next starting
-			device.Config.DeviceId = float64(deviceId)
+			//Update device id into config.json file after register success
+			device.Config.DeviceId = deviceId
+			conf.DeviceId = deviceId
 			device.Config.RegisteredAt = regAt
+			err = config.WriteConfig(device.Config, config.DefaultConfigPath)
 
 			device.BootstrapOrRetry()
 			dev = &device

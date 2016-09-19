@@ -19,14 +19,14 @@ const packageJsonPath = "/tmp/agent/app/package.json"
 // UserConfig: resin's config.json with information about this device
 type UserConfig struct {
 	ApplicationName		string  `json:"applicationName"`
-	ApplicationId 		string  `json:"applicationId"`
 	ApiKey        		string  `json:"apikey"`
 	UserId        		string  `json:"userId"`
 	Username      		string  `json:"username"`
 	DeviceType    		string  `json:"deviceType"`
 	Uuid          		string  `json:"uuid,omitempty"`
-	RegisteredAt  		float64 `json:"registered_at,omitempty"`
-	DeviceId      		float64 `json:"deviceId,omitempty"`
+	RegisteredAt  		int 	`json:"registered_at,omitempty"`
+	DeviceId      		int 	`json:"deviceId,omitempty"`
+	ApplicationId 		int  	`json:"applicationId"`
 }
 
 // Reads a UserConfig structure from path
@@ -144,8 +144,8 @@ func SaveToDB(config UserConfig, db *supermodels.Config) (err error) {
 
 	keyvals["uuid"] = config.Uuid
 	keyvals["apiKey"] = config.ApiKey
-	keyvals["username"] = config.Username
-	keyvals["userId"] = config.UserId
+	//keyvals["username"] = config.Username
+	//keyvals["userId"] = config.UserId
 
 	/*if v, e := GetSupervisorVersion(); e == nil {
 		keyvals["version"] = v

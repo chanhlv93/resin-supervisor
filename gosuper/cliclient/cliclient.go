@@ -4,10 +4,9 @@ import (
 	"log"
 	"time"
 	"encoding/json"
+	"strconv"
 	"github.com/go-resty/resty"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
-
-	"fmt"
 )
 
 type Client struct {
@@ -15,12 +14,30 @@ type Client struct {
 	ApiKey 		string
 }
 
-type DeviceRegister struct {
+type DeviveRegister struct {
 	Id 		int		`json:"Id,omitempty"`
+	Appid 		int 		`json:"appid"`
 	Name 		string 		`json:"name"`
-	Appid 		string 		`json:"appid"`
 	Uuid 		string 		`json:"uuid"`
 	Devicetype 	string 		`json:"devicetype"`
+}
+
+type DeviceState struct {
+	AppId 		int 	`json:"appId"`
+	DeviceId 	int 	`json:"deviceId"`
+	State 		string  `json:"state"`
+}
+
+func (client *Client) CheckConnectivity() (check bool, err error) {
+	resp, err := resty.R().Get(client.BaseApiEndpoint + "/v1/ping")
+	if check, err = strconv.ParseBool(resp.String()); err == nil {
+		return
+	}
+	return
+}
+
+func (client *Client) GetApps(uuid, registryEndpoint, deviceId string) (apps []supermodels.App, err error) {
+	return 
 }
 
 func (client *Client) Getapplication() (apps []supermodels.App, err error) {
@@ -39,8 +56,9 @@ func (client *Client) Getapplication() (apps []supermodels.App, err error) {
 	return
 }
 
-func (client *Client) RegisterDevice(devRegister DeviceRegister) (registeredAt float64, deviceId int, err error) {
-	fmt.Printf("devRegister = ", devRegister)
+
+func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt int, deviceId int, err error) {
+
 	resp, err := resty.R().
 		SetQueryString("apikey=" + client.ApiKey).
 		SetHeader("Content-Type", "application/json").
@@ -53,10 +71,9 @@ func (client *Client) RegisterDevice(devRegister DeviceRegister) (registeredAt f
 		log.Println(err)
 	}
 
-	var deviceRegistered DeviceRegister
-	registeredAtFloat64 := float64(time.Now().Unix())
-	registeredAt = registeredAtFloat64
-
+	var deviceRegistered DeviveRegister
+	//registeredAtFloat64 := float64(int32(time.Now().Unix()))
+	registeredAt = int(time.Now().Unix())
 	if err := json.Unmarshal(resp.Body(), &deviceRegistered); err != nil {
 		log.Println(err)
 	}
@@ -64,4 +81,15 @@ func (client *Client) RegisterDevice(devRegister DeviceRegister) (registeredAt f
 	deviceId = deviceRegistered.Id
 
 	return
+}
+
+func (client * Client) UpdateState(appid, deviceid int, status string) (err error) {
+	devState := DeviceState{AppId: appid, DeviceId: deviceid, State: status}
+
+	_, err = resty.R().
+		SetQueryString("apikey=" + client.ApiKey).
+		SetHeader("Content-Type", "application/json").
+		SetBody(devState).
+		Post(client.BaseApiEndpoint + "/v1/device/updatestate")
+	return err
 }

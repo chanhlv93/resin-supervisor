@@ -11,7 +11,7 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/psutils"
 	"github.com/resin-io/resin-supervisor/gosuper/resin"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
-	//"github.com/resin-io/resin-supervisor/gosuper/utils"
+	"github.com/resin-io/resin-supervisor/gosuper/cliclient"
 )
 
 var ResinDataPath string = "/mnt/root/resin-data/"
@@ -31,6 +31,18 @@ func init() {
 
 // TODO: implement connectivityCheck
 func connectivityCheck() {
+
+}
+
+func testConnectivityCheck(config config.SupervisorConfig) {
+	cliClient := cliclient.Client{BaseApiEndpoint: config.ApiEndpoint, ApiKey:""}
+	for {
+		check, err := cliClient.CheckConnectivity(); if err != nil {
+			log.Println(err)
+		}
+		log.Println("check connectivity result", check)
+		time.Sleep(time.Second * 10)
+	}
 
 }
 
@@ -58,8 +70,10 @@ func startOOMProtectionTimer(hostproc string, dockerSocket string) *time.Ticker 
 
 func (supervisor *Supervisor) Start(connectivityCheckEnabled bool, oomProtectionEnabled bool) {
 	var err error
+
 	if connectivityCheckEnabled {
 		go connectivityCheck()
+		//go testConnectivityCheck(supervisor.Config)
 	}
 
 	supervisor.Config = config.GetSupervisorConfig()
