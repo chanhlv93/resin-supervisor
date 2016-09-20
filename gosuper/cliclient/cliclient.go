@@ -16,10 +16,10 @@ type Client struct {
 
 type DeviveRegister struct {
 	Id 		int		`json:"Id,omitempty"`
-	Appid 		int 		`json:"appid"`
+	AppId 		int 		`json:"appid"`
 	Name 		string 		`json:"name"`
 	Uuid 		string 		`json:"uuid"`
-	Devicetype 	string 		`json:"devicetype"`
+	DeviceType 	string 		`json:"devicetype"`
 }
 
 type DeviceState struct {
@@ -49,12 +49,11 @@ func (client *Client) GetApps(orgId string) (apps []supermodels.App, err error) 
 	var appGet supermodels.App
 	if err := json.Unmarshal(resp.Body(), &appGet); err != nil {
 		log.Println(err)
-		return
+	} else {
+		apps = append(apps, appGet)
 	}
 
-	apps = append(apps, appGet)
-
-	return 
+	return
 }
 
 func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt int, deviceId int, err error) {
@@ -65,7 +64,7 @@ func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt i
 		/*SetHeader("Accept", "application/json").*/
 		SetBody(devRegister).
 
-		Post(client.BaseApiEndpoint + "/v1/device/" + devRegister.Appid)
+		Post(client.BaseApiEndpoint + "/v1/device/" + strconv.Itoa(devRegister.AppId))
 
 	if err != nil {
 		log.Println(err)
@@ -90,6 +89,6 @@ func (client * Client) UpdateState(appid, deviceid int, status string) (err erro
 		SetQueryString("apikey=" + client.ApiKey).
 		SetHeader("Content-Type", "application/json").
 		SetBody(devState).
-		Post(client.BaseApiEndpoint + "/v1/device/"+appid+"/updatestate")
+		Post(client.BaseApiEndpoint + "/v1/device/"+ strconv.Itoa(appid)+"/updatestate")
 	return err
 }

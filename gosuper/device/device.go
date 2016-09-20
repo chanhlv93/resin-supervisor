@@ -15,7 +15,6 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/cliclient"
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 	"github.com/resin-io/resin-supervisor/gosuper/utils"
-	"fmt"
 )
 
 const uuidByteLength = 31
@@ -145,7 +144,7 @@ func New(appsCollection *supermodels.AppsCollection, dbConfig *supermodels.Confi
 			//device.Config.DeviceType = conf.DeviceType
 
 			//device.ResinClient = resin.NewClient(superConfig.ApiEndpoint, conf.ApiKey)
-			deviceRegister := cliclient.DeviveRegister{Appid: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, Devicetype: conf.DeviceType}
+			deviceRegister := cliclient.DeviveRegister{AppId: conf.ApplicationId, Name: conf.ApplicationName, Uuid: uuid, DeviceType: conf.DeviceType}
 			//Set up cli client with needed informations to call other func.
 			device.CliClient = cliclient.Client{BaseApiEndpoint: device.SuperConfig.ApiEndpoint, ApiKey:conf.ApiKey}
 

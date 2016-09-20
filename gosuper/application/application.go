@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/resin-io/resin-supervisor/gosuper/application/updatestatus"
@@ -16,6 +15,7 @@ import (
 	"github.com/resin-io/resin-supervisor/gosuper/supermodels"
 	"github.com/resin-io/resin-supervisor/gosuper/Godeps/_workspace/src/github.com/samalba/dockerclient"
 	"github.com/resin-io/resin-supervisor/gosuper/cliclient"
+	"strconv"
 )
 
 const (
@@ -90,9 +90,7 @@ func (manager *Manager) update(force bool) {
 	doTheUpdate := func() (err error) {
 		var localApps []supermodels.App
 		// Get apps from API
-		if deviceId, err := manager.Device.GetId(); err != nil {
-			return err
-		} else if remoteApps, err := manager.CliClient.GetApps(manager.Device.Uuid, manager.superConfig.RegistryEndpoint, strconv.Itoa(deviceId)); err != nil {
+		if remoteApps, err := manager.CliClient.GetApps(strconv.Itoa(manager.Device.Config.ApplicationId)); err != nil {
 			return err
 		} else if err = manager.Apps.List(&localApps); err != nil {
 			return err
@@ -157,7 +155,7 @@ func (manager *Manager)loadPreloadedApps() {
 		if containerId, err := docker.CreateContainer(containerConfig, appName, nil); err != nil {
 			log.Println(err)
 		} else {
-			config := dockerclient.HostConfig{PortBindings:makeBinding("80", "80")}
+			config := dockerclient.HostConfig{PortBindings:makeBinding("8888", "8888")}
 			if err := docker.StartContainer(containerId, &config); err != nil {
 				log.Printf("cannot start container: %s", err)
 			} else {
