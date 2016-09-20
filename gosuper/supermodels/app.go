@@ -13,11 +13,11 @@ type AppsCollection struct {
 }
 
 type App struct {
-	AppId       int
-	Commit      string
-	ContainerId string
-	Env         map[string]string
-	ImageId     string
+	AppId       int 				`json:"appId"`
+	Commit      string				`json:"commit"`
+	ContainerId string				`json:"containerId"`
+	Env         map[string]string	`json:"env"`
+	ImageId     string				`json:"imageId"`
 }
 
 //Create or update an App in the database (identified by its AppId)

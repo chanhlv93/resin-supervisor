@@ -36,26 +36,26 @@ func (client *Client) CheckConnectivity() (check bool, err error) {
 	return
 }
 
-func (client *Client) GetApps(uuid, registryEndpoint, deviceId string) (apps []supermodels.App, err error) {
-	return 
-}
+func (client *Client) GetApps(orgId string) (apps []supermodels.App, err error) {
 
-func (client *Client) Getapplication() (apps []supermodels.App, err error) {
 	resp, err := resty.R().
-		//SetQueryString("apikey=" + client.ApiKey).
-		SetHeader("Accept", "application/json").
-		Get(client.BaseApiEndpoint + "/v1/app")
+		SetHeader("Content-Type", "application/json").
+		Get(client.BaseApiEndpoint + "/v1/org/app/" + orgId)
+
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(resp.Body())
-	if err := json.Unmarshal(resp.Body(), &apps); err != nil {
+
+	var appGet supermodels.App
+	if err := json.Unmarshal(resp.Body(), &appGet); err != nil {
 		log.Println(err)
+		return
 	}
 
-	return
-}
+	apps = append(apps, appGet)
 
+	return 
+}
 
 func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt int, deviceId int, err error) {
 
@@ -65,7 +65,7 @@ func (client *Client) RegisterDevice(devRegister DeviveRegister) (registeredAt i
 		/*SetHeader("Accept", "application/json").*/
 		SetBody(devRegister).
 
-		Post(client.BaseApiEndpoint + "/v1/device")
+		Post(client.BaseApiEndpoint + "/v1/device/" + devRegister.Appid)
 
 	if err != nil {
 		log.Println(err)
@@ -90,6 +90,6 @@ func (client * Client) UpdateState(appid, deviceid int, status string) (err erro
 		SetQueryString("apikey=" + client.ApiKey).
 		SetHeader("Content-Type", "application/json").
 		SetBody(devState).
-		Post(client.BaseApiEndpoint + "/v1/device/updatestate")
+		Post(client.BaseApiEndpoint + "/v1/device/"+appid+"/updatestate")
 	return err
 }
